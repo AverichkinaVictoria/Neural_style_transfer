@@ -4,25 +4,28 @@ from PIL import Image
 import numpy as np
 import cv2
 from tensorflow.python.keras.preprocessing import image as kp_image
-
-
+from tkinter.filedialog import askopenfilename, asksaveasfilename
 
 if __name__ == '__main__':
     print('Start')
 
 
 def get_content():
-    content_path = '/Users/viktoria/Desktop/Green_Sea_Turtle_grazing_seagrass.jpeg'
+    content_path = askopenfilename()
     return content_path
 
 
 def get_style():
-    style_path = '/Users/viktoria/Desktop/The_Great_Wave_off_Kanagawa.jpeg'
+    style_path = askopenfilename()
     return style_path
 
 
 def get_image(path):
-    image = Image.open(path)
+    try:
+        image = Image.open(path)
+    except:
+        print('Wrong file format. Supported extensions: .jpeg and .jpg')
+        return
     new_size = 512
     extra = max(image.size)
     scale = new_size / extra
@@ -107,12 +110,10 @@ def find_loss(model, trainable_image, gramMatrix_style, features_content, weight
         gramMatrix_style_new = find_GramMatrix(new_style)
         style_total += (0.2 * compute_style_loss(old_style, gramMatrix_style_new))
     style_total *= weight_style
-    print('style_total', style_total)
 
     for new_content, old_content in zip(new_content_outputs, features_content):
         content_total += (compute_content_loss(old_content, new_content))
     content_total *= weight_content
-    print('content_total', content_total)
 
     return style_total+content_total
 
@@ -129,6 +130,9 @@ def start_training(epochs, model, trainable_image, gramMatrix_style, features_co
         print('epoch:', epoch)
         with tf.GradientTape() as g:
             total_loss = find_loss(model, trainable_image, gramMatrix_style, features_content, weight_style, weight_content)
+
+        print('total_loss', total_loss)
+        
         gradient = g.gradient(total_loss, trainable_image)
         optimizer.apply_gradients([(gradient, trainable_image)])
         trainable_image.assign(tf.clip_by_value(trainable_image, min, max))
@@ -154,6 +158,13 @@ def normalization_final_image(final_image):
     return extra
 
 
+def save_result(path, image):
+    try:
+        image = image[:, :, ::-1]
+        cv2.imwrite(path, image)
+    except:
+        print('Wrong file extension. Try to save with extensions as .jpeg or .jpg!')
+
 
 
 path_cont = get_content()
@@ -162,14 +173,12 @@ path_style = get_style()
 image_cont = get_image(path_cont)
 image_style = get_image(path_style)
 
-#imshow(image_cont, title='Content image')
 
 layers_of_content = ['block5_conv2']
 layers_of_style = ['block1_conv1', 'block2_conv1', 'block3_conv1', 'block4_conv1', 'block5_conv1']
 
 model = create_model(layers_of_style + layers_of_content)
 
-#model = switch_trainable(model)
 
 for l in model.layers:
     l.trainable = False
@@ -187,7 +196,7 @@ trainable_image = tf.Variable(image_cont_preprocessed, dtype=tf.float32)
 
 optimizer = tf.optimizers.Adam(learning_rate=5.0, beta_1=0.99, epsilon=0.1)
 
-epochs = 100
+epochs = 1000
 weight_style = 1e-2
 weight_content = 1e3
 final_image, final_loss = start_training(epochs, model, trainable_image, gramMatrix_style, features_content, optimizer, weight_style, weight_content)
@@ -196,7 +205,14 @@ result = normalization_final_image(final_image)
 
 print('final_image', final_image)
 print('final_loss', final_loss)
-imshow(result)
+#imshow(result)
+
+path_for_saving = asksaveasfilename(
+                defaultextension='.jpeg', filetypes=[('jpeg image', '.jpg')],
+                title="Choose filename and directory")
+save_result(path_for_saving, result)
+
+
 
 
 
