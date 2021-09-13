@@ -1,7 +1,12 @@
-from tkinter import Tk, Button, BOTTOM, NW, NE, Label, messagebox
+from tkinter import Tk, Button, BOTTOM, NW, NE, Label, messagebox, LEFT, RIGHT
+
+import ImageTk
+
 import image_proc
 from image_proc import *
 from model import *
+
+
 
 
 class Window:
@@ -15,6 +20,7 @@ class Window:
         self.root.resizable(False, False)
         self.image_cont = None
         self.image_style = None
+
 
         if icon:
             self.root.iconbitmap(icon)
@@ -64,7 +70,7 @@ class Window:
 
             optimizer = tf.optimizers.Adam(learning_rate=5.0, beta_1=0.99, epsilon=0.1)
 
-            epochs = 1000
+            epochs = 2
             weight_style = 1e-2
             weight_content = 1e3
             final_image, final_loss = start_training(epochs, model, trainable_image, gramMatrix_style, features_content,
@@ -108,25 +114,51 @@ class Window:
     def choose_content(self):
         path_cont = image_proc.get_content()
         self.image_cont = self.get_image(path_cont)
+        if self.image_cont is None:
+            return
+        else:
+
+            img_content = Image.open(path_cont)
+            scale_w = int(0.3 * self.w)
+            scale_h = int(0.4 * self.h)
+            new_img = img_content.resize((round(scale_w), round(scale_h)), Image.ANTIALIAS)
+
+            img_to_lbl = ImageTk.PhotoImage(new_img)
+            label_img_content = Label(self.root, image=img_to_lbl)
+            label_img_content.image = img_to_lbl
+            label_img_content.place(relx=0.1, rely=0.2, width=img_to_lbl.width(), height=img_to_lbl.height())
 
     def choose_style(self):
         path_style = image_proc.get_style()
         self.image_style = self.get_image(path_style)
 
+        if self.image_style is None:
+            return
+        else:
+            img_style = Image.open(path_style)
+            scale_w = int(0.3 * self.w)
+            scale_h = int(0.4 * self.h)
+            new_img = img_style.resize((round(scale_w), round(scale_h)), Image.ANTIALIAS)
+
+            img_to_lbl = ImageTk.PhotoImage(new_img)
+            label_img_style = Label(self.root, image=img_to_lbl)
+            label_img_style.image = img_to_lbl
+            label_img_style.place(relx=(0.9-(img_to_lbl.width()/self.w)), rely=0.2, width=img_to_lbl.width(), height=img_to_lbl.height())
+
     def draw_widgets(self):
-        label_content = Label(self.root, text='Выберите контент:')
+        label_content = Label(self.root, text='Выберите контент:', anchor='w')
         label_content.config(font=("Courier", 15))
-        label_content.place(relx=0.1, rely=0.1, width=int(0.2 * self.w), height=int(0.05 * self.h))
-        label_style = Label(self.root, text='Выберите стиль:')
+        label_content.place(relx=0.1, rely=0.1, width=int(0.3 * self.w), height=int(0.05 * self.h))
+        label_style = Label(self.root, text='Выберите стиль:', anchor='w')
         label_style.config(font=("Courier", 15))
-        label_style.place(relx=0.9 - (int(0.2 * self.w) / self.w), rely=0.1, width=int(0.2 * self.w), height=int(0.05 * self.h))
+        label_style.place(relx=(0.9-(int(0.3 * self.w)/self.w)), rely=0.1, width=int(0.3 * self.w), height=int(0.05 * self.h))
 
         button_content = Button(self.root, text='Выбрать изображение', command=self.choose_content)
         button_content.config(font=("Courier", 12))
-        button_content.place(relx=0.1, rely=0.6, width=int(0.2 * self.w), height=int(0.05 * self.h))
+        button_content.place(relx=0.1, rely=0.65, width=int(0.2 * self.w), height=int(0.05 * self.h))
         button_style = Button(self.root, text='Выбрать изображение', command=self.choose_style)
         button_style.config(font=("Courier", 12))
-        button_style.place(relx=0.9 - (int(0.2 * self.w) / self.w), rely=0.6, width=int(0.2 * self.w),
+        button_style.place(relx=(0.9-(int(0.3 * self.w)/self.w)), rely=0.65, width=int(0.2 * self.w),
                            height=int(0.05 * self.h))
         button_start = Button(self.root, text='Пуск', command=self.start)
         button_start.config(font=("Courier", 15))
