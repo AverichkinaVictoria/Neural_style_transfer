@@ -8,29 +8,15 @@ import cv2
 
 
 def get_content():
-    content_path = askopenfilename()
+    content_path = askopenfilename(defaultextension='.jpeg', filetypes=[('jpg image', '.jpg'), ('jpeg image', '.jpeg')],
+                                                title="Choose file")
     return content_path
 
 
 def get_style():
-    style_path = askopenfilename()
+    style_path = askopenfilename(defaultextension='.jpeg', filetypes=[('jpg image', '.jpg'), ('jpeg image', '.jpeg')],
+                                                title="Choose file")
     return style_path
-
-
-def get_image(path):
-    try:
-        image = Image.open(path)
-    except:
-        print('Wrong file format. Supported extensions: .jpeg and .jpg')
-        return
-    new_size = 512
-    extra = max(image.size)
-    scale = new_size / extra
-    new_img = image.resize((round(image.size[0] * scale), round(image.size[1] * scale)), Image.ANTIALIAS)
-
-    new_img = kp_image.img_to_array(new_img)
-    new_img = np.expand_dims(new_img, axis=0)
-    return new_img
 
 
 def imshow(image, title=None):
@@ -67,11 +53,3 @@ def normalization_final_image(final_image):
     extra = extra[:, :, ::-1]  # bgr -> rgb
     extra = np.clip(extra, 0, 255).astype('uint8')
     return extra
-
-
-def save_result(path, image):
-    try:
-        image = image[:, :, ::-1]
-        cv2.imwrite(path, image)
-    except:
-        print('Wrong file extension. Try to save with extensions as .jpeg or .jpg!')
