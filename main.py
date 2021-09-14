@@ -13,5 +13,9 @@ if __name__ == '__main__':
     print('Start')
 
 
+dict = {'language': [1,2]}
+
 window = Window()
 window.show()
+
+
