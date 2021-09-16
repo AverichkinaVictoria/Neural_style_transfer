@@ -1,4 +1,5 @@
 import tensorflow as tf
+from tensorflow._api import *
 import numpy as np
 
 def switch_trainable(model):

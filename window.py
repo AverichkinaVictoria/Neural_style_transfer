@@ -1,5 +1,5 @@
 from tkinter import Tk, Button, BOTTOM, NW, NE, Label, messagebox, LEFT, RIGHT, HORIZONTAL
-from tkinter.ttk import Progressbar
+from tkinter.ttk import Progressbar, Combobox
 
 import ImageTk
 from matplotlib import cm
@@ -24,7 +24,11 @@ language_dictionary = {'start_error': ["Недостаточно данных", 
                        'label_language': ['Выберите язык:', 'Select a language'],
                        'button_language': ['Русский', 'English'],
                        'button_save': ['Сохранить', 'Save'],
-                       'label_res': ['Результат:', 'Result:']}
+                       'label_res': ['Результат:', 'Result:'],
+                       'combobox_style_min': ['Минимальная', 'Minimum'],
+                       'combobox_style_st': ['Средняя', 'Standard'],
+                       'combobox_style_max': ['Максимальная', 'Maximum'],
+                       'label_choose_weight': ['Степень обработки: ', 'Processing depth']}
 
 
 class Window:
@@ -40,6 +44,8 @@ class Window:
         self.image_style = None
         self.language = 0
         self.widgets = []
+        self.s_w = 1e-2
+        self.c_w = 1e3
 
         if icon:
             self.root.iconbitmap(icon)
@@ -65,6 +71,25 @@ class Window:
         self.widgets_destroy(widgets)
         self.draw_widgets_three()
 
+    def check_level_of_style(self):
+        if self.combobox_style.current() == -1:
+            return
+
+        elif self.combobox_style.current() == 0:
+            self.s_w = 1e-3
+            self.c_w = 1e4
+
+        elif self.combobox_style.current() == 1:
+            self.s_w = 1e-2
+            self.c_w = 1e3
+
+        elif self.combobox_style.current() == 2:
+            self.s_w = 1e-1
+            self.c_w = 1e3
+
+        else:
+            return
+
     def start_processing(self, widgets):
 
         if self.image_cont is None:
@@ -81,6 +106,8 @@ class Window:
             self.pb.place(relx=0.5 - (int(0.3 * self.w) / self.w / 2), rely=0.85, width=int(0.3 * self.w),
                           height=int(0.02 * self.h))
             self.widgets.append((self.pb))
+
+            self.check_level_of_style()
 
             layers_of_content = ['block5_conv2']
             layers_of_style = ['block1_conv1', 'block2_conv1', 'block3_conv1', 'block4_conv1', 'block5_conv1']
@@ -102,9 +129,12 @@ class Window:
 
             optimizer = tf.optimizers.Adam(learning_rate=5.0, beta_1=0.99, epsilon=0.1)
 
-            epochs = 1000
-            weight_style = 1e-2
-            weight_content = 1e3
+            epochs = 2
+            weight_style = self.s_w
+            weight_content = self.c_w
+            print(weight_style)
+            print(weight_content)
+            print()
             final_image, final_loss = start_training(self, epochs, model, trainable_image, gramMatrix_style,
                                                      features_content,
                                                      optimizer, weight_style, weight_content)
@@ -245,6 +275,21 @@ class Window:
         button_style.place(relx=(0.9 - (int(0.3 * self.w) / self.w)), rely=0.65, width=int(0.3 * self.w),
                            height=int(0.05 * self.h))
         self.widgets.append(button_style)
+
+        label_weight = Label(self.root, text=language_dictionary['label_choose_weight'][self.language])
+        label_weight.config(font=("Courier", 12))
+        label_weight.place(relx=(0.9 - (int(0.3 * self.w) / self.w)), rely=0.7, width=int(0.3 * self.w),
+                                  height=int(0.05 * self.h))
+        self.widgets.append(label_weight)
+
+        self.combobox_style = Combobox(self.root, values=(language_dictionary['combobox_style_min'][self.language],
+                                                     language_dictionary['combobox_style_st'][self.language],
+                                                     language_dictionary['combobox_style_max'][self.language]), state='readonly')
+        self.combobox_style.config(font=("Courier", 12))
+        self.combobox_style.place(relx=(0.9 - (int(0.3 * self.w) / self.w)), rely=0.75, width=int(0.3 * self.w),
+                           height=int(0.05 * self.h))
+        self.combobox_style.current(1)
+        self.widgets.append(self.combobox_style)
 
         button_start = Button(self.root, text=language_dictionary['button_start'][self.language],
                               command=lambda: self.start_processing(self.widgets))
