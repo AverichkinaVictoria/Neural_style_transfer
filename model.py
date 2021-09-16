@@ -1,4 +1,5 @@
 import tensorflow as tf
+from tensorflow._api import *
 import numpy as np
 
 def switch_trainable(model):
@@ -57,7 +58,7 @@ def find_loss(model, trainable_image, gramMatrix_style, features_content, weight
     return style_total + content_total
 
 
-def start_training(epochs, model, trainable_image, gramMatrix_style, features_content, optimizer, weight_style,
+def start_training(window, epochs, model, trainable_image, gramMatrix_style, features_content, optimizer, weight_style,
                    weight_content):
     average_pixel = np.array([103.939, 116.779, 123.68])
     min = 0 - average_pixel
@@ -67,6 +68,9 @@ def start_training(epochs, model, trainable_image, gramMatrix_style, features_co
     best_loss = float('inf')
 
     for epoch in range(epochs):
+        window.pb['value'] = int((epoch + 1) / epochs * 100)
+        window.pb.update()
+
         print('epoch:', epoch)
         with tf.GradientTape() as g:
             total_loss = find_loss(model, trainable_image, gramMatrix_style, features_content, weight_style,
