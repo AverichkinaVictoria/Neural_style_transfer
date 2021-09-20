@@ -20,7 +20,6 @@ def get_style():
 
 
 def imshow(image, title=None):
-    print('Image shape:', image.shape)
     image_show = image
     if len(image.shape) == 4:
         image_show = np.squeeze(image, axis=0).astype('uint8')
