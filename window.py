@@ -111,9 +111,6 @@ class Window:
 
             self.result = normalization_final_image(final_image)
 
-            print('final_image', final_image)
-            print('final_loss', final_loss)
-
             self.start(widgets)
 
     def get_image(self, path):

@@ -1,6 +1,7 @@
 import tensorflow as tf
 import numpy as np
 
+
 def switch_trainable(model):
     for l in model.layers:
         l.trainable = False
