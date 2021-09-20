@@ -12,7 +12,6 @@ from model import *
 if __name__ == '__main__':
     print('Start')
 
+#creation of main app window
 window = Window()
 window.show()
-
-

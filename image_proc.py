@@ -8,18 +8,24 @@ import cv2
 
 
 def get_content():
+    """Gets the content path."""
+
     content_path = askopenfilename(defaultextension='.jpeg', filetypes=[('jpg image', '.jpg'), ('jpeg image', '.jpeg')],
                                                 title="Choose file")
     return content_path
 
 
 def get_style():
+    """Gets the style path."""
+
     style_path = askopenfilename(defaultextension='.jpeg', filetypes=[('jpg image', '.jpg'), ('jpeg image', '.jpeg')],
                                                 title="Choose file")
     return style_path
 
 
 def imshow(image, title=None):
+    """Extra method for image show."""
+
     image_show = image
     if len(image.shape) == 4:
         image_show = np.squeeze(image, axis=0).astype('uint8')
@@ -36,11 +42,15 @@ def imshow(image, title=None):
 
 
 def preprocess_img(image):
+    """Preprocess of imput images"""
+
     preprocessed_image = tf.keras.applications.vgg19.preprocess_input(image)
     return preprocessed_image
 
 
 def normalization_final_image(final_image):
+    """Post-process of output image."""
+
     extra = final_image.numpy()
     average_pixel = np.array([103.939, 116.779, 123.68])
     if len(extra.shape) == 4:
