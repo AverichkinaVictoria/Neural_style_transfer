@@ -147,7 +147,7 @@ class Window:
 
             optimizer = tf.optimizers.Adam(learning_rate=5.0, beta_1=0.99, epsilon=0.1)
 
-            epochs = 5
+            epochs = 1000
             weight_style = self.s_w
             weight_content = self.c_w
             print(weight_style)
