@@ -28,8 +28,10 @@ language_dictionary = {'start_error': ["Недостаточно данных", 
                        'combobox_style_min': ['Минимальная', 'Minimum'],
                        'combobox_style_st': ['Средняя', 'Standard'],
                        'combobox_style_max': ['Максимальная', 'Maximum'],
+
                        'label_choose_weight': ['Степень обработки: ', 'Processing depth'],
                        'button_back': ['Назад', 'Back']}
+
 
 
 class Window:
