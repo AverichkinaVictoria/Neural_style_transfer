@@ -2,13 +2,18 @@ import tensorflow as tf
 from tensorflow._api import *
 import numpy as np
 
+
 def switch_trainable(model):
+    """"Switches all layears of model to untrainable"""
+
     for l in model.layers:
         l.trainable = False
     return model
 
 
 def create_model(layers_names):
+    """"Loads and create VGG19 model with certain layers"""
+
     vgg_model = tf.keras.applications.VGG19(include_top=False, weights='imagenet')
     vgg_model.trainable = False
     outputs = [vgg_model.get_layer(layer).output for layer in layers_names]
@@ -16,15 +21,21 @@ def create_model(layers_names):
 
 
 def get_style_features(outputs):
+    """"Returns the representations of style features from outputs of model"""
+
     features_representations_style = [feature_style[0] for feature_style in outputs[:5]]
     return features_representations_style
 
 
 def get_content_features(outputs):
+    """"Returns the representations of content features from outputs of model"""
+
     features_representations_content = [feature_content[0] for feature_content in outputs[5:]]
     return features_representations_content
 
 def find_GramMatrix(features):
+    """"Returns Gram matrix of features"""
+
     reshaped_input = tf.reshape(features, [-1, int(features.shape[-1])])
     gramMatrix = tf.matmul(reshaped_input, reshaped_input, transpose_a=True)
     len = tf.cast(tf.shape(reshaped_input)[0], tf.float32)
@@ -32,14 +43,20 @@ def find_GramMatrix(features):
 
 
 def compute_style_loss(old_style, new_style):
+    """"Returns computed style loss of model"""
+
     return tf.reduce_mean(tf.square(old_style - new_style))
 
 
 def compute_content_loss(old_content, new_content):
+    """"Returns computed content loss of model"""
+
     return tf.reduce_mean(tf.square(old_content - new_content))
 
 
 def find_loss(model, trainable_image, gramMatrix_style, features_content, weight_style, weight_content):
+    """"Returns total loss of model, which includes style and content loss with certain coefficients"""
+
     new_outputs = model(trainable_image)
     new_style_outputs = new_outputs[:5]
     new_content_outputs = new_outputs[5:]
@@ -60,6 +77,8 @@ def find_loss(model, trainable_image, gramMatrix_style, features_content, weight
 
 def start_training(window, epochs, model, trainable_image, gramMatrix_style, features_content, optimizer, weight_style,
                    weight_content):
+    """"Main method of training session of model. Returns final image and final loss"""
+
     average_pixel = np.array([103.939, 116.779, 123.68])
     min = 0 - average_pixel
     max = 255 - average_pixel

@@ -28,11 +28,20 @@ language_dictionary = {'start_error': ["Недостаточно данных", 
                        'combobox_style_min': ['Минимальная', 'Minimum'],
                        'combobox_style_st': ['Средняя', 'Standard'],
                        'combobox_style_max': ['Максимальная', 'Maximum'],
-                       'label_choose_weight': ['Степень обработки: ', 'Processing depth']}
+
+                       'label_choose_weight': ['Степень обработки: ', 'Processing depth'],
+                       'button_back': ['Назад', 'Back']}
+
 
 
 class Window:
     def __init__(self, coef=1.5, icon=None):
+        """Initialize the main working window of the app.
+        Keyword arguments:
+        coef -- size of window (default 1.5)
+        icon -- the icon of the app (default None)
+        """
+
         self.root = Tk()
         self.root.title('Stytran')
         self.screen_size = self.get_screen()
@@ -51,11 +60,15 @@ class Window:
             self.root.iconbitmap(icon)
 
     def get_screen(self):
+        """Returns screen size."""
+
         width = self.root.winfo_screenwidth()
         height = self.root.winfo_screenheight()
         return (width, height)
 
     def window_size(self):
+        """Returns app window size."""
+
         w = self.screen_size[0] / self.coef
         h = self.screen_size[1] / self.coef
         x = (self.screen_size[0] / 2) - (w / 2)
@@ -64,14 +77,20 @@ class Window:
         return w, h
 
     def show(self):
+        """Shows the main window of the app."""
+
         self.draw_widgets_one()
         self.root.mainloop()
 
     def start(self, widgets):
+        """Starts the process of training."""
+
         self.widgets_destroy(widgets)
         self.draw_widgets_three()
 
     def check_level_of_style(self):
+        """Check processing depth."""
+
         if self.combobox_style.current() == -1:
             return
 
@@ -91,6 +110,7 @@ class Window:
             return
 
     def start_processing(self, widgets):
+        """Start model training."""
 
         if self.image_cont is None:
             messagebox.showerror(language_dictionary['start_error'][self.language],
@@ -129,7 +149,7 @@ class Window:
 
             optimizer = tf.optimizers.Adam(learning_rate=5.0, beta_1=0.99, epsilon=0.1)
 
-            epochs = 2
+            epochs = 1000
             weight_style = self.s_w
             weight_content = self.c_w
             print(weight_style)
@@ -147,6 +167,8 @@ class Window:
             self.start(widgets)
 
     def get_image(self, path):
+        """Prints selected images."""
+
         try:
             image = Image.open(path)
         except Exception as e:
@@ -164,6 +186,8 @@ class Window:
         return new_img
 
     def save_result(self, path, image):
+        """Saves the result of models work."""
+
         try:
             image = image[:, :, ::-1]
             cv2.imwrite(path, image)
@@ -173,6 +197,8 @@ class Window:
             return None
 
     def choose_content(self):
+        """Opens the file dialog for user."""
+
         path_cont = image_proc.get_content()
         self.image_cont = self.get_image(path_cont)
 
@@ -192,6 +218,8 @@ class Window:
             self.widgets.append(label_img_content)
 
     def choose_style(self):
+        """Opens the file dialog for user."""
+
         path_style = image_proc.get_style()
         self.image_style = self.get_image(path_style)
 
@@ -211,25 +239,44 @@ class Window:
             self.widgets.append(label_img_style)
 
     def widgets_destroy(self, widgets):
+        """Destroys all widgets on the current screen."""
+
         for el in widgets:
             el.place_forget()
 
     def lan_rus(self, widgets):
+        """Switches the language to Russian."""
+
         self.language = 0
         self.widgets_destroy(widgets)
         self.draw_widgets_two()
 
     def lan_eng(self, widgets):
+        """Switches the language to English."""
+
         self.language = 1
         self.widgets_destroy(widgets)
         self.draw_widgets_two()
 
     def save(self):
-        path_for_saving = asksaveasfilename(defaultextension='.jpeg', filetypes=[('jpeg image', '.jpg')],
+        """Opens file dialog for saving."""
+
+        path_for_saving = asksaveasfilename(defaultextension='.jpeg', filetypes=[('jpg image', '.jpg'), ('jpeg image', '.jpeg')],
                                             title=language_dictionary['path_saving_title'][self.language])
         self.save_result(path_for_saving, self.result)
 
+    def back(self, widgets):
+        """Show the main screen of app."""
+
+        self.widgets_destroy(widgets)
+        self.image_style = None
+        self.image_cont = None
+        self.result = None
+        self.draw_widgets_two()
+
     def draw_widgets_one(self):
+        """Show the first screen of app."""
+
         self.widgets = []
         label_language = Label(self.root, text=language_dictionary['label_language'][self.language])
         label_language.config(font=("Courier", 15))
@@ -251,6 +298,8 @@ class Window:
         self.widgets.append(button_eng)
 
     def draw_widgets_two(self):
+        """Show the second screen of app."""
+
         self.widgets = []
         label_content = Label(self.root, text=language_dictionary['label_content'][self.language])
         label_content.config(font=("Courier", 15))
@@ -299,11 +348,13 @@ class Window:
         self.widgets.append(button_start)
 
     def draw_widgets_three(self):
+        """Show the third screen of app."""
+
         self.widgets = []
 
         label_res = Label(self.root, text=language_dictionary['label_res'][self.language])
         label_res.config(font=("Courier", 15))
-        label_res.place(relx=0.5 - (int(0.3 * self.w) / self.w / 2), rely=0.12, width=int(0.3 * self.w),
+        label_res.place(relx=0.5 - (int(0.3 * self.w) / self.w / 2), rely=0.07, width=int(0.3 * self.w),
                         height=int(0.05 * self.h))
         self.widgets.append(label_res)
 
@@ -315,13 +366,20 @@ class Window:
         img_to_lbl = ImageTk.PhotoImage(new_img)
         label_img_content = Label(self.root, image=img_to_lbl)
         label_img_content.image = img_to_lbl
-        label_img_content.place(relx=0.5 - (img_to_lbl.width() / self.w / 2), rely=0.2, width=img_to_lbl.width(),
+        label_img_content.place(relx=0.5 - (img_to_lbl.width() / self.w / 2), rely=0.15, width=img_to_lbl.width(),
                                 height=img_to_lbl.height())
         self.widgets.append(label_img_content)
 
         button_save = Button(self.root, text=language_dictionary['button_save'][self.language],
                              command=lambda: self.save())
         button_save.config(font=("Courier", 15))
-        button_save.place(relx=0.5 - (int(0.45 * self.w) / self.w / 2), rely=0.85, width=int(0.45 * self.w),
+        button_save.place(relx=0.5 - (int(0.45 * self.w) / self.w / 2), rely=0.8, width=int(0.45 * self.w),
                           height=int(0.05 * self.h))
         self.widgets.append(button_save)
+
+        button_back = Button(self.root, text=language_dictionary['button_back'][self.language],
+                             command=lambda: self.back( self.widgets))
+        button_back.config(font=("Courier", 15))
+        button_back.place(relx=0.5 - (int(0.45 * self.w) / self.w / 2), rely=0.9, width=int(0.45 * self.w),
+                          height=int(0.05 * self.h))
+        self.widgets.append(button_back)

@@ -12,10 +12,6 @@ from model import *
 if __name__ == '__main__':
     print('Start')
 
-
-dict = {'language': [1,2]}
-
+#creation of main app window
 window = Window()
 window.show()
-
-
